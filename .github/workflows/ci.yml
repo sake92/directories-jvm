@@ -14,16 +14,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [11, 17, 21, 23]
+        java: [8, 11, 17, 21, 23]
         OS: ["ubuntu-latest", "windows-latest", "macos-13", "macos-14"]
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - uses: coursier/cache-action@v6.4
-    - uses: coursier/setup-action@v1
+    # install JDK 23, always needed for multi-release JAR
+    - uses: actions/setup-java@v4
       with:
-        jvm: ${{ matrix.java }}
+        distribution: 'temurin'
+        java-version: |
+          23
+          ${{ matrix.java }}
+    - name: Compile JDK23 module
+      run: |
+        export JAVA_HOME=$JAVA_HOME_23_x64
+        ./mill jdk23.compile
     - name: Test
       run: ./mill __.test
     - name: Publish locally
@@ -39,7 +47,7 @@ jobs:
     - uses: coursier/cache-action@v6.4
     - uses: coursier/setup-action@v1
       with:
-        jvm: 11
+        jvm: "23"
     - name: Publish
       run: ./mill mill.scalalib.PublishModule/ --sonatypeUri https://s01.oss.sonatype.org/service/local --sonatypeSnapshotUri https://s01.oss.sonatype.org/content/repositories/snapshots
       env:
