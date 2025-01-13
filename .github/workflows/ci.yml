@@ -9,13 +9,18 @@ on:
 
 jobs:
   test:
-    name: Test ${{ matrix.OS }} / java ${{ matrix.java }}
-    runs-on: ${{ matrix.OS }}
+    name: Test ${{ matrix.os-and-arch.os }}-${{ matrix.os-and-arch.arch }} / java ${{ matrix.java }}
+    runs-on: ${{ matrix.os-and-arch.os }}
     strategy:
       fail-fast: false
       matrix:
         java: [8, 11, 17, 21, 23]
-        OS: ["ubuntu-latest", "windows-latest", "macos-13", "macos-14"]
+        os-and-arch: [ 
+            {os: "ubuntu-latest", arch: "X64"},
+            {os: "windows-latest", arch: "X64"},
+            {os: "macos-13", arch: "ARM64"},
+            {os: "macos-14", arch: "ARM64"}
+        ]
     steps:
     - uses: actions/checkout@v3
       with:
@@ -30,7 +35,7 @@ jobs:
           ${{ matrix.java }}
     - name: Compile JDK23 module
       run: |
-        export JAVA_HOME=$JAVA_HOME_23_X64
+        export JAVA_HOME=$JAVA_HOME_23_${{matrix.os-and-arch.arch}}
         ./mill jdk23.compile
     - name: Test
       run: ./mill __.test
