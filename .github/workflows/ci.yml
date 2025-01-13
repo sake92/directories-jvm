@@ -30,7 +30,7 @@ jobs:
           ${{ matrix.java }}
     - name: Compile JDK23 module
       run: |
-        export JAVA_HOME=$JAVA_HOME_23_x64
+        export JAVA_HOME=$JAVA_HOME_23_X64
         ./mill jdk23.compile
     - name: Test
       run: ./mill __.test
